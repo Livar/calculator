@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Cost Calculator - Multi Customer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .customer-selector {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .customer-selector h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .customer-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .customer-tag {
+            background: white;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .customer-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .customer-tag.active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .customer-tag .delete-customer {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-customer-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-customer-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .add-customer-btn {
+            background: white;
+            color: #667eea;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .image-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .offer-inputs {
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .offer-inputs.active {
+            display: block;
+        }
+
+        .custom-offer-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .custom-offer-section h4 {
+            color: #27ae60;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .saved-custom-offers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .custom-offer-tag {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 2px solid #27ae60;
+            transition: all 0.3s;
+        }
+
+        .custom-offer-tag:hover {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .saved-items {
+            margin-top: 20px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: start;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .item-info {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 3px;
+        }
+
+        .item-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3498db;
+            margin-top: 8px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .qty-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: #2980b9;
+        }
+
+        .qty-display {
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+        }
+
+        .total-summary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-summary h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .total-summary .amount {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .export-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .pending-badge {
+            background: #f39c12;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .pending-items {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .pending-items h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .pending-item {
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .no-customer-warning {
+            background: #fff3cd;
+            border: 2px solid #f39c12;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
+        .offer-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .offer-type-option {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .offer-type-option:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+
+        .offer-type-option.selected {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .item-card {
+                flex-direction: column;
+            }
+
+            .item-image {
+                width: 100%;
+                height: 150px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .customer-controls {
+                flex-direction: column;
+            }
+
+            .customer-tag {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇬🇧 → 🇮🇶 Import Cost Calculator</h1>
+            <p>UK to Kurdistan - Multi-Customer Management System</p>
+        </div>
+
+        <div class="card">
+            <div class="customer-selector">
+                <h3>👥 Select Customer</h3>
+                <div class="customer-controls" id="customerList">
+                    <!-- Customers will be loaded here -->
+                </div>
+                <div class="add-customer-form">
+                    <input type="text" id="newCustomerName" placeholder="Enter customer name..." onkeypress="if(event.key==='Enter') addCustomer()">
+                    <button class="add-customer-btn" onclick="addCustomer()">➕ Add Customer</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="noCustomerWarning" class="no-customer-warning hidden">
+            ⚠️ Please select or create a customer first!
+        </div>
+
+        <div class="card" id="addItemCard">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">
+                Add New Item 
+                <span id="currentCustomerDisplay" style="color: #27ae60; font-size: 16px;"></span>
+                <span id="pendingCount" class="badge hidden">0</span>
+            </h2>
+            
+            <div id="pendingItemsSection" class="pending-items hidden">
+                <h4>📦 Items Ready to Save:</h4>
+                <div id="pendingItemsList"></div>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="saveAllPending()">💾 Save All Items</button>
+                    <button class="btn btn-secondary" onclick="clearPending()">🗑️ Clear Pending</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Item Image</label>
+                <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <div id="uploadText">📷 Click to upload image</div>
+                    <img id="imagePreview" class="image-preview hidden">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Item Name / Description</label>
+                <textarea id="itemName" placeholder="e.g., Samsung Galaxy S24, Kitchen Mixer, etc."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Price per Unit (GBP £)</label>
+                <input type="number" id="pricePerUnit" step="0.01" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Offer Type</label>
+                <select id="offerType" onchange="toggleOfferInputs()">
+                    <option value="none">No Offer</option>
+                    <option value="percentage">Percentage Off (%)</option>
+                    <option value="buyxgety">Buy X Get Y Free</option>
+                    <option value="3for2">3 for 2</option>
+                    <option value="2for1">2 for 1 (Buy 1 Get 1 Free)</option>
+                    <option value="half">Half Price (50% Off)</option>
+                    <option value="bogof">BOGOF (Buy One Get One Free)</option>
+                    <option value="fixed">Fixed Price Deal</option>
+                    <option value="bulk">Bulk Discount (Tiered)</option>
+                    <option value="custom">Custom Discount (£)</option>
+                    <option value="saved">Use Saved Custom Offer</option>
+                </select>
+            </div>
+
+            <div id="offerInputs" class="offer-inputs">
+                <div id="offerInputContent">
+                    <!-- Dynamic offer inputs will be inserted here -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="quantity" value="1" min="1">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-warning" onclick="addToPending()">➕ Add to List</button>
+                <button class="btn btn-success" onclick="addAndSaveImmediately()">💾 Add & Save Now</button>
+            </div>
+        </div>
+
+        <div class="card saved-items">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">
+                Saved Items 
+                <span id="activeCustomerName" style="color: #27ae60; font-size: 16px;"></span>
+            </h2>
+            <div id="savedItemsList">
+                <p style="text-align: center; color: #95a5a6;">No items saved yet</p>
+            </div>
+            
+            <div id="totalSummary" class="hidden">
+                <div class="total-summary">
+                    <h2>Total Import Cost</h2>
+                    <div class="amount" id="grandTotal">£0.00</div>
+                    <div style="font-size: 14px; margin-top: 10px; opacity: 0.9;">
+                        Total Items: <span id="totalItemCount">0</span>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <h3>📤 Export Options</h3>
+                    <div class="button-group">
+                        <button class="btn btn-success" onclick="exportToCSV()">📊 Export to CSV (Excel)</button>
+                        <button class="btn" onclick="exportToText()">📄 Export to Text</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-danger" onclick="clearAllItems()" style="margin-top: 15px;">🗑️ Clear All Items</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Offer Modal -->
+    <div id="customOfferModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+            <h3 style="margin-bottom: 20px; color: #2c3e50;">💾 Save Custom Offer</h3>
+            <div class="form-group">
+                <label>Offer Name</label>
+                <input type="text" id="customOfferName" placeholder="e.g., Summer Sale, Weekly Deal">
+            </div>
+            <div class="form-group">
+                <label>Offer Description</label>
+                <textarea id="customOfferDescription" placeholder="Describe the offer details..."></textarea>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="saveCustomOffer()">Save Offer</button>
+                <button class="btn btn-secondary" onclick="closeCustomOfferModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let currentImageData = null;
+    let customers = [];
+    let activeCustomer = null;
+    let pendingItems = [];
+    let customOffers = [];
+
+    // Data structure: { customerName: { items: [], customOffers: [] } }
+    let database = {};
+
+    window.onload = function() {
+        loadDatabase();
+        displayCustomers();
+        updateUI();
+    };
+
+    // ==================== DATABASE MANAGEMENT ====================
+
+    function loadDatabase() {
+        const saved = localStorage.getItem('importDatabase');
+        if (saved) {
+            database = JSON.parse(saved);
+            customers = Object.keys(database);
+        }
+    }
+
+    function saveDatabase() {
+        localStorage.setItem('importDatabase', JSON.stringify(database));
+    }
+
+    // ==================== CUSTOMER MANAGEMENT ====================
+
+    function addCustomer() {
+        const name = document.getElementById('newCustomerName').value.trim();
+        if (!name) {
+            alert('⚠️ Please enter a customer name');
+            return;
+        }
+
+        if (database[name]) {
+            alert('⚠️ Customer already exists');
+            return;
+        }
+
+        database[name] = { items: [], customOffers: [] };
+        customers.push(name);
+        saveDatabase();
+        displayCustomers();
+        document.getElementById('newCustomerName').value = '';
+        
+        // Auto-select new customer
+        selectCustomer(name);
+    }
+
+    function selectCustomer(name) {
+        activeCustomer = name;
+        updateUI();
+        displayItems();
+    }
+
+    function deleteCustomer(name) {
+        if (confirm(`⚠️ Delete customer "${name}" and all their data?`)) {
+            delete database[name];
+            customers = customers.filter(c => c !== name);
+            if (activeCustomer === name) {
+                activeCustomer = null;
+            }
+            saveDatabase();
+            displayCustomers();
+            updateUI();
+            displayItems();
+        }
+    }
+
+    function displayCustomers() {
+        const container = document.getElementById('customerList');
+        if (customers.length === 0) {
+            container.innerHTML = '<p style="color: white; opacity: 0.8;">No customers yet. Add one above!</p>';
+            return;
+        }
+
+        let html = '';
+        customers.forEach(customer => {
+            const itemCount = database[customer].items.length;
+            const isActive = customer === activeCustomer;
+            html += `
+                <div class="customer-tag ${isActive ? 'active' : ''}" onclick="selectCustomer('${customer}')">
+                    <span>${customer} ${itemCount > 0 ? `(${itemCount})` : ''}</span>
+                    <button class="delete-customer" onclick="event.stopPropagation(); deleteCustomer('${customer}')">×</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function updateUI() {
+        const noCustomerWarning = document.getElementById('noCustomerWarning');
+        const addItemCard = document.getElementById('addItemCard');
+        
+        if (!activeCustomer) {
+            noCustomerWarning.classList.remove('hidden');
+            addItemCard.style.opacity = '0.5';
+            addItemCard.style.pointerEvents = 'none';
+            document.getElementById('currentCustomerDisplay').textContent = '';
+            document.getElementById('activeCustomerName').textContent = '';
+        } else {
+            noCustomerWarning.classList.add('hidden');
+            addItemCard.style.opacity = '1';
+            addItemCard.style.pointerEvents = 'auto';
+            document.getElementById('currentCustomerDisplay').textContent = `for ${activeCustomer}`;
+            document.getElementById('activeCustomerName').textContent = `for ${activeCustomer}`;
+        }
+    }
+
+    // ==================== OFFER CALCULATIONS ====================
+
+    function toggleOfferInputs() {
+        const offerType = document.getElementById('offerType').value;
+        const offerInputs = document.getElementById('offerInputs');
+        const offerInputContent = document.getElementById('offerInputContent');
+
+        if (offerType === 'none' || offerType === 'half' || offerType === 'bogof') {
+            offerInputs.classList.remove('active');
+            return;
+        }
+
+        offerInputs.classList.add('active');
+        let html = '';
+
+        switch(offerType) {
+            case 'percentage':
+                html = `
+                    <label>Percentage Off (%)</label>
+                    <input type="number" id="offerValue" step="0.01" placeholder="e.g., 25 for 25% off">
+                `;
+                break;
+            case 'buyxgety':
+                html = `
+                    <label>Buy X items</label>
+                    <input type="number" id="offerBuyX" min="1" placeholder="e.g., 2">
+                    <label style="margin-top: 10px;">Get Y items free</label>
+                    <input type="number" id="offerGetY" min="1" placeholder="e.g., 1">
+                `;
+                break;
+            case '3for2':
+                html = `<p style="color: #27ae60; font-weight: 600;">Buy 3, Pay for 2</p>`;
+                break;
+            case '2for1':
+                html = `<p style="color: #27ae60; font-weight: 600;">Buy 2, Pay for 1</p>`;
+                break;
+            case 'fixed':
+                html = `
+                    <label>Number of items in deal</label>
+                    <input type="number" id="offerQuantity" min="1" placeholder="e.g., 5">
+                    <label style="margin-top: 10px;">Fixed price for all (£)</label>
+                    <input type="number" id="offerFixedPrice" step="0.01" placeholder="e.g., 10.00">
+                `;
+                break;
+            case 'bulk':
+                html = `
+                    <label>Buy at least (quantity)</label>
+                    <input type="number" id="offerBulkQty" min="1" placeholder="e.g., 10">
+                    <label style="margin-top: 10px;">Get discount (%)</label>
+                    <input type="number" id="offerBulkDiscount" step="0.01" placeholder="e.g., 15">
+                `;
+                break;
+            case 'custom':
+                html = `
+                    <label>Discount Amount (£)</label>
+                    <input type="number" id="offerValue" step="0.01" placeholder="e.g., 5.00">
+                    <button class="btn btn-success" style="margin-top: 10px;" onclick="openCustomOfferModal()">💾 Save as Custom Offer</button>
+                `;
+                break;
+            case 'saved':
+                html = `<div id="savedCustomOffersList"></div>`;
+                setTimeout(() => displaySavedCustomOffers(), 100);
+                break;
+        }
+
+        offerInputContent.innerHTML = html;
+    }
+
+    function calculateCost(pricePerUnit, quantity, offerType, offerData) {
+        let originalPrice = pricePerUnit * quantity;
+        let discountAmount = 0;
+        let finalPrice = originalPrice;
+        let offerDescription = '';
+
+        switch(offerType) {
+            case 'percentage':
+                const percent = parseFloat(offerData.value) || 0;
+                discountAmount = originalPrice * (percent / 100);
+                finalPrice = originalPrice - discountAmount;
+                offerDescription = `${percent}% Off`;
+                break;
+
+            case 'buyxgety':
+                const buyX = parseInt(offerData.buyX) || 2;
+                const getY = parseInt(offerData.getY) || 1;
+                const sets = Math.floor(quantity / (buyX + getY));
+                const remainder = quantity % (buyX + getY);
+                finalPrice = (sets * buyX * pricePerUnit) + (remainder * pricePerUnit);
+                discountAmount = originalPrice - finalPrice;
+                offerDescription = `Buy ${buyX} Get ${getY} Free`;
+                break;
+
+            case '3for2':
+                const sets3for2 = Math.floor(quantity / 3);
+                const remainder3for2 = quantity % 3;
+                finalPrice = (sets3for2 * 2 * pricePerUnit) + (remainder3for2 * pricePerUnit);
+                discountAmount = originalPrice - finalPrice;
+                offerDescription = '3 for 2';
+                break;
+
+            case '2for1':
+                const sets2for1 = Math.floor(quantity / 2);
+                const remainder2for1 = quantity % 2;
+                finalPrice = (sets2for1 * pricePerUnit) + (remainder2for1 * pricePerUnit);
+                discountAmount = originalPrice - finalPrice;
+                offerDescription = '2 for 1';
+                break;
+
+            case 'half':
+                discountAmount = originalPrice * 0.5;
+                finalPrice = originalPrice * 0.5;
+                offerDescription = 'Half Price';
+                break;
+
+            case 'bogof':
+                const setsBOGOF = Math.floor(quantity / 2);
+                const remainderBOGOF = quantity % 2;
+                finalPrice = (setsBOGOF * pricePerUnit) + (remainderBOGOF * pricePerUnit);
+                discountAmount = originalPrice - finalPrice;
+                offerDescription = 'BOGOF';
+                break;
+
+            case 'fixed':
+                const dealQty = parseInt(offerData.quantity) || 1;
+                const fixedPrice = parseFloat(offerData.fixedPrice) || 0;
+                const fullSets = Math.floor(quantity / dealQty);
+                const remainderFixed = quantity % dealQty;
+                finalPrice = (fullSets * fixedPrice) + (remainderFixed * pricePerUnit);
+                discountAmount = originalPrice - finalPrice;
+                offerDescription = `${dealQty} for £${fixedPrice.toFixed(2)}`;
+                break;
+
+            case 'bulk':
+                const bulkQty = parseInt(offerData.bulkQty) || 10;
+                const bulkDiscount = parseFloat(offerData.bulkDiscount) || 0;
+                if (quantity >= bulkQty) {
+                    discountAmount = originalPrice * (bulkDiscount / 100);
+                    finalPrice = originalPrice - discountAmount;
+                    offerDescription = `Bulk ${bulkDiscount}% off (${bulkQty}+ items)`;
+                } else {
+                    offerDescription = `Bulk discount at ${bulkQty}+ items`;
+                }
+                break;
+
+            case 'custom':
+                discountAmount = parseFloat(offerData.value) || 0;
+                finalPrice = originalPrice - discountAmount;
+                offerDescription = `£${discountAmount.toFixed(2)} Off`;
+                break;
+
+            case 'saved':
+                discountAmount = parseFloat(offerData.value) || 0;
+                finalPrice = originalPrice - discountAmount;
+                offerDescription = offerData.name || 'Custom Offer';
+                break;
+
+            case 'none':
+            default:
+                finalPrice = originalPrice;
+                discountAmount = 0;
+                offerDescription = 'No Offer';
+        }
+
+        return {
+            originalPrice: originalPrice,
+            discountAmount: discountAmount,
+            priceAfterDiscount: finalPrice / quantity,
+            totalCost: finalPrice,
+            quantity: quantity,
+            offerDescription: offerDescription
+        };
+    }
+
+    function getOfferData() {
+        const offerType = document.getElementById('offerType').value;
+        let data = {};
+
+        switch(offerType) {
+            case 'percentage':
+            case 'custom':
+                data.value = parseFloat(document.getElementById('offerValue')?.value) || 0;
+                break;
+            case 'buyxgety':
+                data.buyX = parseInt(document.getElementById('offerBuyX')?.value) || 2;
+                data.getY = parseInt(document.getElementById('offerGetY')?.value) || 1;
+                break;
+            case 'fixed':
+                data.quantity = parseInt(document.getElementById('offerQuantity')?.value) || 1;
+                data.fixedPrice = parseFloat(document.getElementById('offerFixedPrice')?.value) || 0;
+                break;
+            case 'bulk':
+                data.bulkQty = parseInt(document.getElementById('offerBulkQty')?.value) || 10;
+                data.bulkDiscount = parseFloat(document.getElementById('offerBulkDiscount')?.value) || 0;
+                break;
+        }
+
+        return data;
+    }
+
+    // ==================== CUSTOM OFFERS ====================
+
+    function openCustomOfferModal() {
+        document.getElementById('customOfferModal').style.display = 'flex';
+    }
+
+    function closeCustomOfferModal() {
+        document.getElementById('customOfferModal').style.display = 'none';
+        document.getElementById('customOfferName').value = '';
+        document.getElementById('customOfferDescription').value = '';
+    }
+
+    function saveCustomOffer() {
+        if (!activeCustomer) return;
+
+        const name = document.getElementById('customOfferName').value.trim();
+        const description = document.getElementById('customOfferDescription').value.trim();
+        const value = parseFloat(document.getElementById('offerValue')?.value) || 0;
+
+        if (!name) {
+            alert('⚠️ Please enter an offer name');
+            return;
+        }
+
+        const customOffer = {
+            id: Date.now(),
+            name: name,
+            description: description,
+            value: value
+        };
+
+        database[activeCustomer].customOffers.push(customOffer);
+        saveDatabase();
+        closeCustomOfferModal();
+        alert('✅ Custom offer saved!');
+    }
+
+    function displaySavedCustomOffers() {
+        if (!activeCustomer) return;
+
+        const container = document.getElementById('savedCustomOffersList');
+        const offers = database[activeCustomer].customOffers || [];
+
+        if (offers.length === 0) {
+            container.innerHTML = '<p style="color: #7f8c8d;">No saved custom offers yet.</p>';
+            return;
+        }
+
+        let html = '<div class="saved-custom-offers">';
+        offers.forEach(offer => {
+            html += `
+                <div class="custom-offer-tag" onclick="selectSavedOffer(${offer.id})">
+                    ${offer.name} (£${offer.value.toFixed(2)})
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    }
+
+    function selectSavedOffer(offerId) {
+        if (!activeCustomer) return;
+
+        const offer = database[activeCustomer].customOffers.find(o => o.id === offerId);
+        if (offer) {
+            // Store the selected offer for use in calculations
+            document.getElementById('offerType').setAttribute('data-saved-offer', JSON.stringify(offer));
+            alert(`✅ Selected: ${offer.name} - £${offer.value.toFixed(2)} discount`);
+        }
+    }
+
+    // ==================== ITEM MANAGEMENT ====================
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImageData = e.target.result;
+                document.getElementById('imagePreview').src = currentImageData;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                document.getElementById('uploadText').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function validateForm() {
+        if (!activeCustomer) {
+            alert('⚠️ Please select a customer first');
+            return false;
+        }
+
+        const itemName = document.getElementById('itemName').value.trim();
+        const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value) || 0;
+
+        if (!itemName) {
+            alert('⚠️ Please enter an item name/description');
+            return false;
+        }
+
+        if (pricePerUnit <= 0) {
+            alert('⚠️ Please enter a valid price per unit');
+            return false;
+        }
+
+        return true;
+    }
+
+    function createItemObject() {
+        const itemName = document.getElementById('itemName').value.trim();
+        const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value) || 0;
+        const offerType = document.getElementById('offerType').value;
+        const quantity = parseInt(document.getElementById('quantity').value) || 1;
+
+        let offerData = getOfferData();
+
+        // Handle saved custom offers
+        if (offerType === 'saved') {
+            const savedOfferData = document.getElementById('offerType').getAttribute('data-saved-offer');
+            if (savedOfferData) {
+                const savedOffer = JSON.parse(savedOfferData);
+                offerData = {
+                    name: savedOffer.name,
+                    value: savedOffer.value
+                };
+            }
+        }
+
+        const calculation = calculateCost(pricePerUnit, quantity, offerType, offerData);
+
+        return {
+            id: Date.now(),
+            image: currentImageData,
+            name: itemName,
+            pricePerUnit: pricePerUnit,
+            offerType: offerType,
+            offerData: offerData,
+            quantity: quantity,
+            totalCost: calculation.totalCost,
+            originalPrice: calculation.originalPrice,
+            discountAmount: calculation.discountAmount,
+            offerDescription: calculation.offerDescription
+        };
+    }
+
+    function addToPending() {
+        if (!validateForm()) return;
+
+        const item = createItemObject();
+        pendingItems.push(item);
+        updatePendingDisplay();
+        resetForm();
+    }
+
+    function addAndSaveImmediately() {
+        if (!validateForm()) return;
+
+        const item = createItemObject();
+        database[activeCustomer].items.push(item);
+        saveDatabase();
+        displayItems();
+        displayCustomers();
+        resetForm();
+    }
+
+    function updatePendingDisplay() {
+        const pendingSection = document.getElementById('pendingItemsSection');
+        const pendingList = document.getElementById('pendingItemsList');
+        const pendingCount = document.getElementById('pendingCount');
+
+        if (pendingItems.length === 0) {
+            pendingSection.classList.add('hidden');
+            pendingCount.classList.add('hidden');
+            return;
+        }
+
+        pendingSection.classList.remove('hidden');
+        pendingCount.classList.remove('hidden');
+        pendingCount.textContent = pendingItems.length;
+
+        let html = '';
+        pendingItems.forEach((item, index) => {
+            html += `
+                <div class="pending-item">
+                    <strong>${item.name}</strong> - £${item.pricePerUnit.toFixed(2)} × ${item.quantity} 
+                    ${item.offerDescription !== 'No Offer' ? `(${item.offerDescription})` : ''} = 
+                    <strong>£${item.totalCost.toFixed(2)}</strong>
+                    <button onclick="removePending(${index})" style="float: right; background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
+                </div>
+            `;
+        });
+
+        pendingList.innerHTML = html;
+    }
+
+    function removePending(index) {
+        pendingItems.splice(index, 1);
+        updatePendingDisplay();
+    }
+
+    function saveAllPending() {
+        if (pendingItems.length === 0 || !activeCustomer) return;
+
+        database[activeCustomer].items = database[activeCustomer].items.concat(pendingItems);
+        saveDatabase();
+        displayItems();
+        displayCustomers();
+        pendingItems = [];
+        updatePendingDisplay();
+        alert('✅ All items saved successfully!');
+    }
+
+    function clearPending() {
+        if (confirm('Clear all pending items?')) {
+            pendingItems = [];
+            updatePendingDisplay();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('itemName').value = '';
+        document.getElementById('pricePerUnit').value = '';
+        document.getElementById('quantity').value = '1';
+        document.getElementById('offerType').value = 'none';
+        document.getElementById('imageInput').value = '';
+        document.getElementById('imagePreview').classList.add('hidden');
+        document.getElementById('uploadText').style.display = 'block';
+        toggleOfferInputs();
+        currentImageData = null;
+    }
+
+    function displayItems() {
+        const container = document.getElementById('savedItemsList');
+        
+        if (!activeCustomer || database[activeCustomer].items.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #95a5a6;">No items saved yet</p>';
+            document.getElementById('totalSummary').classList.add('hidden');
+            return;
+        }
+
+        const items = database[activeCustomer].items;
+        let html = '';
+        let grandTotal = 0;
+        let totalItems = 0;
+
+        items.forEach(item => {
+            grandTotal += item.totalCost;
+            totalItems += item.quantity;
+            
+            html += `
+                <div class="item-card">
+                    ${item.image ? `<img src="${item.image}" class="item-image" alt="${item.name}">` : '<div class="item-image" style="background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 30px;">📦</div>'}
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-info">Unit Price: £${item.pricePerUnit.toFixed(2)}</div>
+                        ${item.offerDescription !== 'No Offer' ? `<div class="item-info">Offer: ${item.offerDescription}</div>` : ''}
+                        ${item.discountAmount > 0 ? `<div class="item-info" style="color: #27ae60;">Saved: £${item.discountAmount.toFixed(2)}</div>` : ''}
+                        
+                        <div class="quantity-controls">
+                            <button class="qty-btn" onclick="decreaseQuantity(${item.id})">−</button>
+                            <div class="qty-display">${item.quantity}</div>
+                            <button class="qty-btn" onclick="increaseQuantity(${item.id})">+</button>
+                        </div>
+                        
+                        <div class="item-total">Total: £${item.totalCost.toFixed(2)}</div>
+                        
+                        <div class="item-actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteItem(${item.id})">🗑️ Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('grandTotal').textContent = '£' + grandTotal.toFixed(2);
+        document.getElementById('totalItemCount').textContent = totalItems;
+        document.getElementById('totalSummary').classList.remove('hidden');
+    }
+
+    function increaseQuantity(id) {
+        if (!activeCustomer) return;
+
+        const item = database[activeCustomer].items.find(i => i.id === id);
+        if (item) {
+            item.quantity++;
+            const calculation = calculateCost(item.pricePerUnit, item.quantity, item.offerType, item.offerData);
+            item.totalCost = calculation.totalCost;
+            item.originalPrice = calculation.originalPrice;
+            item.discountAmount = calculation.discountAmount;
+            saveDatabase();
+            displayItems();
+            displayCustomers();
+        }
+    }
+
+    function decreaseQuantity(id) {
+        if (!activeCustomer) return;
+
+        const item = database[activeCustomer].items.find(i => i.id === id);
+        if (item && item.quantity > 1) {
+            item.quantity--;
+            const calculation = calculateCost(item.pricePerUnit, item.quantity, item.offerType, item.offerData);
+            item.totalCost = calculation.totalCost;
+            item.originalPrice = calculation.originalPrice;
+            item.discountAmount = calculation.discountAmount;
+            saveDatabase();
+            displayItems();
+            displayCustomers();
+        } else if (item && item.quantity === 1) {
+            if (confirm('Quantity is 1. Do you want to delete this item?')) {
+                deleteItem(id);
+            }
+        }
+    }
+
+    function deleteItem(id) {
+        if (!activeCustomer) return;
+
+        if (confirm('Are you sure you want to delete this item?')) {
+            database[activeCustomer].items = database[activeCustomer].items.filter(item => item.id !== id);
+            saveDatabase();
+            displayItems();
+            displayCustomers();
+        }
+    }
+
+    function clearAllItems() {
+        if (!activeCustomer) return;
+
+        if (confirm('⚠️ Are you sure you want to clear all items for this customer? This cannot be undone.')) {
+            database[activeCustomer].items = [];
+            saveDatabase();
+            displayItems();
+            displayCustomers();
+        }
+    }
+
+    // ==================== EXPORT FUNCTIONS ====================
+
+    function exportToCSV() {
+        if (!activeCustomer || database[activeCustomer].items.length === 0) {
+            alert('No items to export!');
+            return;
+        }
+
+        const items = database[activeCustomer].items;
+        let csv = `Customer: ${activeCustomer}\n`;
+        csv += `Export Date: ${new Date().toLocaleDateString()}\n\n`;
+        csv += 'Item Name,Unit Price (GBP),Quantity,Offer Type,Discount (GBP),Total Cost (GBP)\n';
+        
+        let grandTotal = 0;
+        items.forEach(item => {
+            csv += `"${item.name}",${item.pricePerUnit.toFixed(2)},${item.quantity},"${item.offerDescription}",${item.discountAmount.toFixed(2)},${item.totalCost.toFixed(2)}\n`;
+            grandTotal += item.totalCost;
+        });
+
+        csv += `\nGRAND TOTAL,,,,£${grandTotal.toFixed(2)}\n`;
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${activeCustomer}-import-costs-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        alert('✅ CSV file downloaded! You can open it in Excel or Google Sheets.');
+    }
+
+    function exportToText() {
+        if (!activeCustomer || database[activeCustomer].items.length === 0) {
+            alert('No items to export!');
+            return;
+        }
+
+        const items = database[activeCustomer].items;
+        let text = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+        text += '     UK TO KURDISTAN IMPORT COSTS\n';
+        text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+        text += `Customer: ${activeCustomer}\n`;
+        text += `Date: ${new Date().toLocaleDateString()}\n\n`;
+
+        let grandTotal = 0;
+        let totalItems = 0;
+
+        items.forEach((item, index) => {
+            text += `${index + 1}. ${item.name}\n`;
+            text += `   Unit Price: £${item.pricePerUnit.toFixed(2)}\n`;
+            text += `   Quantity: ${item.quantity}\n`;
+            
+            if (item.offerDescription !== 'No Offer') {
+                text += `   Offer: ${item.offerDescription}\n`;
+                text += `   Discount: £${item.discountAmount.toFixed(2)}\n`;
+            }
+            
+            text += `   Total: £${item.totalCost.toFixed(2)}\n`;
+            text += `   ----------------------------------------\n\n`;
+            
+            grandTotal += item.totalCost;
+            totalItems += item.quantity;
+        });
+
+        text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+        text += `Total Items: ${totalItems}\n`;
+        text += `GRAND TOTAL: £${grandTotal.toFixed(2)}\n`;
+        text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${activeCustomer}-import-costs-${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        alert('✅ Text file downloaded!');
+    }
+</script>
+
+</body>
+</html>
